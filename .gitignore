@@ -24,3 +24,6 @@ docs/site/
 Manifest.toml
 
 .idea
+
+# RData files containing bayesian networks
+*.rda
