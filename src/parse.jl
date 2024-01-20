@@ -22,10 +22,9 @@ function read_graphicalmodel(path::String)::GraphicalModel
         add_vertex!(graph)
 
         for parent in coerce_array(current_node["parents"])
-            println(parent)
             parent_index = network.name2index[parent]
             current_index = network.name2index[key]
-            println(add_edge!(graph, parent_index, current_index))
+            add_edge!(graph, parent_index, current_index)
         end
 
         # todo calculate correct probabilities
