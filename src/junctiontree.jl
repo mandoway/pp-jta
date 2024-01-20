@@ -6,6 +6,27 @@ function compute_jt(model::GraphicalModel)::JunctionTree
     jt = flow_cutter(moralised_graph)
 
     # TODO complete
+    tree = SimpleGraph()
+    for edge in jt[:edges]
+        src = edge[1]
+        dst = edge[2]
+
+        add_edge!(tree, src, dst)
+    end
+
+    bags = Vector{Bag}()
+    for i in 1:jt[:num_bags]
+        index = Symbol("b_$i")
+        bag_vertices = jt[index]
+        
+        # TODO
+        potentials = []
+
+        bag = Bag(BitSet(bag_vertices), potentials)
+        push!(bags, bag)
+    end
+
+    return JunctionTree(tree, bags)
 end
 
 function moralise(graph::SimpleDiGraph)::SimpleGraph
