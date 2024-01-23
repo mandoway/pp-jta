@@ -1,8 +1,6 @@
 using RData
 using Graphs
 
-include("datatypes.jl")
-
 function read_graphicalmodel(path::String)::GraphicalModel
     raw_data = load(path)
     root_element = "bn"
@@ -34,10 +32,6 @@ function read_graphicalmodel(path::String)::GraphicalModel
     return GraphicalModel(graph, labels, probabilities)
 end
 
-function coerce_array(value::Any)::Vector
-    if value isa Vector
-        return value
-    else
-        return [value]
-    end
-end
+coerce_array(value::Vector)::Vector = value
+
+coerce_array(value::Any)::Vector = [value]

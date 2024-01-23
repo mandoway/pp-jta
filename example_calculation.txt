@@ -1,0 +1,36 @@
+probability ( Pollution ) {
+  table 0.9, 0.1;
+}
+probability ( Smoker ) {
+  table 0.3, 0.7;
+}
+probability ( Cancer | Pollution, Smoker ) {
+  (low, True) 0.03, 0.97;
+  (high, True) 0.05, 0.95;
+  (low, False) 0.001, 0.999;
+  (high, False) 0.02, 0.98;
+}
+
+Initial
+(low, True) 1.0, 1.0;
+(high, True) 1.0, 1.0;
+(low, False) 1.0, 1.0;
+(high, False) 1.0, 1.0;
+
+*Pollution
+(low, True) .9, .9;
+(high, True) 0.1, 0.1;
+(low, False) .9, .9;
+(high, False) 0.1, 0.1;
+
+*Smoker
+(low, True) 0.27, 0.27;
+(high, True) 0.03, 0.03;
+(low, False) .63, .63;
+(high, False) 0.07, 0.07;
+
+*Cancer
+(low, True) 0.0081, 0.2619;
+(high, True) 0.0015, 0.0285;
+(low, False) 0.00063, 0.62937;
+(high, False) 0.0014, 0.0686;

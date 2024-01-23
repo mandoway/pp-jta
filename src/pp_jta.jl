@@ -2,8 +2,8 @@ module pp_jta
 
 using Graphs
 
-include("parse.jl")
 include("datatypes.jl")
+include("parse.jl")
 include("junctiontree.jl")
 include("messagepassing.jl")
 

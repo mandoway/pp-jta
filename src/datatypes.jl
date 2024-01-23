@@ -1,11 +1,15 @@
 """
     GraphicalModel(g, labels, probs)
 
-    Represents the probabilistic graphical model imported from an RDA file without any modifications
+  Represents the probabilistic graphical model imported from an RDA file without any modifications
 
-    g         A directed graph modeling a bayesian network
-    labels    The names of every node, index of node in g corresponds to index in labels
-    probs     The probability distributions of nodes, index in g corresponds to index in probs
+  ## Params
+  - `g`: A directed graph modeling a bayesian network
+  - `labels`: The names of every node, index of node in `g` corresponds to index in labels
+  - `probs`: The probability distributions of nodes, index in `g` corresponds to index in probs
+             Array at index i: 
+              - First index of  is the value range of the variable
+              - Rest are parents of i in the order of vertices in `g`
 """
 struct GraphicalModel
   g::SimpleDiGraph
@@ -18,7 +22,7 @@ end
 
     A single bag of nodes according to a tree composition
 
-    N         The dimensionality of potentials        TODO can this be fixed?
+    N         The dimensionality of potentials
     nodes     A set of integers defining which nodes from the original graph are in this bag
     potential The factors of this bag
 """
