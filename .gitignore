@@ -31,3 +31,4 @@ Manifest.toml
 
 # RData files containing bayesian networks
 *.rda
+!instances/*
