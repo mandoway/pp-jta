@@ -1,6 +1,8 @@
 using RData
 using Graphs
 
+export read_graphicalmodel
+
 function read_graphicalmodel(path::String)::GraphicalModel
     raw_data = load(path)
     root_element = "bn"

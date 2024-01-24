@@ -28,7 +28,7 @@ end
 """
 struct Bag{N}
   nodes::BitSet
-  potential::Array{N, Float64}
+  potential::Array{Float64, N}
 end
 
 """
