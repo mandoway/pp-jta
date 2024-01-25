@@ -9,11 +9,11 @@ include("messagepassing.jl")
 
 const DistributionByLabel = Dict{String, Vector{Float64}}
 
-const TREE_DECOMPOSITION_TIMEOUT_S = 20
+const TREE_DECOMPOSITION_TIMEOUT_S = 25
 
 function jta_from(path::String)::DistributionByLabel
   model = read_graphicalmodel(path)
-  return jt(model)
+  return jta(model)
 end
 
 function jta(model::GraphicalModel)::DistributionByLabel
