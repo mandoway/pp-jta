@@ -23,4 +23,12 @@ docs/site/
 # environment.
 Manifest.toml
 
+# IntelliJ platform
 .idea
+
+# VSCode
+.VSCode
+
+# RData files containing bayesian networks
+*.rda
+!instances/*
