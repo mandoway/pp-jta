@@ -6,7 +6,6 @@ TODO
 function traversal_order(jt::JunctionTree)
 	n = nv(jt.tree)
 	order = Tuple{Int64, Int64}[]
-	adj_list = [neighbors(jt.tree, u) for u in 1:nv(jt.tree)]
 	levels = fill(-1, n)
 
 	root = 1
@@ -25,7 +24,6 @@ function traversal_order(jt::JunctionTree)
 	end
 
 	curr_level = maximum(levels)
-	curr_pos = 1
 	while curr_level > 0
 		for curr_node in findall(x -> x == curr_level, levels)
 			for u in neighbors(jt.tree, curr_node)
@@ -54,37 +52,50 @@ function traversal_order(jt::JunctionTree)
 end
 
 
-function send_message!(source::Int64, jt::JunctionTree)
-	source_bag = jt.bags[source]
-	for target in neighbors(jt.tree, source)
-		target_bag = jt.bags[target]
-		seperator_set = intersect(source_bag.nodes, target_bag.nodes)
-
-
-		# sum of seperator set potentials
-		seperator_potential = sum([])
-
-		# sum of source potentials without separator nodes
-		update_potential = sum([source_bag.potential[v] for v in setdiff(source_bag.nodes, seperator_set)])
-
-
-	end
-end
-
 function message_passing(jt::JunctionTree)
 	println(traversal_order(jt))
-# 	for v in traversal_order(jt)
-# 		println(v)
-# 		send_message!(v, jt)
-# 	end
+
+	messages = Dict{Tuple{Int64, Int64}, Array}()
+	sep_set_of_message = Dict{Tuple{Int64, Int64}, Vector{Int64}}()
+
+	for (u, v) in traversal_order(jt)
+		source_bag = jt.bags[u]
+		target_bag = jt.bags[v]
+
+		separator_set = intersect(source_bag.nodes, target_bag.nodes)
+		sep_set_of_message[(u, v)] = separator_set
+
+		source_without_sep_nodes = setdiff(source_bag.nodes, separator_set)
+
+		
+
+
+		pot = source_bag.potential
+		for neighbor in neighbors(jt.tree, u)
+			neighbor == v && continue
+			
+			slice_dims = [indexin(idx, source_bag.nodes)[] for idx in sep_set_of_message[(neighbor, u)]]
+
+			pot = mapslices(slice -> slice .* messages[(neighbor, u)], pot, dims=slice_dims)
+		end
+
+
+		message_dims = [indexin(idx, source_bag.nodes)[] for idx in source_without_sep_nodes]
+
+		# sum of source potentials without separator nodes
+		message = dropdims(sum(pot, dims=Tuple(message_dims)), dims=Tuple(message_dims))
+
+		messages[(u, v)] = message
+	end
+	return messages
 end
 
 
 function run_test()
-	bag_a = Bag{3}(BitSet([1, 2, 3]), rand(Float64, (2, 2, 2)))
-	bag_b = Bag{3}(BitSet([2, 3, 4]), rand(Float64, (2, 2, 2)))
-	bag_c = Bag{3}(BitSet([3, 4, 5]), rand(Float64, (2, 2, 2)))
-	bag_d = Bag{3}(BitSet([4, 5, 6]), rand(Float64, (2, 2, 2)))
+	bag_a = Bag{3}([1, 2, 3], rand(Float64, (2, 2, 2)))
+	bag_b = Bag{3}([2, 3, 4], rand(Float64, (2, 2, 2)))
+	bag_c = Bag{3}([3, 4, 5], rand(Float64, (2, 2, 2)))
+	bag_d = Bag{3}([4, 5, 6], rand(Float64, (2, 2, 2)))
 
 	g = SimpleGraph(4)
 	add_edge!(g, 1, 2)
@@ -93,7 +104,7 @@ function run_test()
 
 	jt = JunctionTree(g, [bag_a, bag_b, bag_c, bag_d])
 	
-	message_passing(jt)
+	messages = message_passing(jt)
 end
 
 
