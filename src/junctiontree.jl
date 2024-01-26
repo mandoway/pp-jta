@@ -1,4 +1,4 @@
-using QXGraphDecompositions; gd = QXGraphDecompositions
+using QXGraphDecompositions: flow_cutter
 
 export compute_jt
 
@@ -55,7 +55,7 @@ function compute_jt(model::GraphicalModel)::JunctionTree
             potentials = mapslices(slice -> slice .* factor_prob, potentials, dims=mapped_to_bag_indices)
         end
 
-        bag = Bag(BitSet(bag_vertices), potentials)
+        bag = Bag(bag_vertices, potentials)
         push!(bags, bag)
     end
 
@@ -65,7 +65,7 @@ end
 function moralise(graph::SimpleDiGraph)::SimpleGraph
     moralised = SimpleGraph(graph)
 
-    for node in Graphs.vertices(graph)
+    for node in vertices(graph)
         parents = inneighbors(graph, node)
 
         for i in eachindex(parents)
