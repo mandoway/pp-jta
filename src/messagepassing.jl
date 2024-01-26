@@ -51,19 +51,25 @@ function traversal_order(jt::JunctionTree)
 	return order
 end
 
+"""
+	sumdrop(arr, dims)
+
+Sum over `arr`s dimensions `dim`, drop those dimensions and return the result.
+"""
+sumdrop(arr, dims) = dropdims(sum(arr; dims=dims); dims=Tuple(dims))
+
+map_to_idx_in(arr::Vector{T}, vals::Vector{T}) where T = [findfirst(==(v), arr) for v in vals]
 
 function message_passing(jt::JunctionTree)
 	println(traversal_order(jt))
 
-	messages = Dict{Tuple{Int64, Int64}, Array}()
-	sep_set_of_message = Dict{Tuple{Int64, Int64}, Vector{Int64}}()
+	messages = Messages()
 
 	for (u, v) in traversal_order(jt)
 		source_bag = jt.bags[u]
 		target_bag = jt.bags[v]
 
 		separator_set = intersect(source_bag.nodes, target_bag.nodes)
-		sep_set_of_message[(u, v)] = separator_set
 
 		source_without_sep_nodes = setdiff(source_bag.nodes, separator_set)
 
@@ -74,18 +80,19 @@ function message_passing(jt::JunctionTree)
 		for neighbor in neighbors(jt.tree, u)
 			neighbor == v && continue
 			
-			slice_dims = [indexin(idx, source_bag.nodes)[] for idx in sep_set_of_message[(neighbor, u)]]
+			slice_dims = [indexin(idx, source_bag.nodes)[]
+						  for idx in messages[(neighbor, u)].separator]
 
-			pot = mapslices(slice -> slice .* messages[(neighbor, u)], pot, dims=slice_dims)
+			pot = mapslices(slice -> slice .* messages[(neighbor, u)].vals, pot, dims=slice_dims)
 		end
 
 
 		message_dims = [indexin(idx, source_bag.nodes)[] for idx in source_without_sep_nodes]
 
 		# sum of source potentials without separator nodes
-		message = dropdims(sum(pot, dims=Tuple(message_dims)), dims=Tuple(message_dims))
+		message = sumdrop(pot, message_dims)
 
-		messages[(u, v)] = message
+		messages[(u, v)] = Message(separator_set, message)
 	end
 	return messages
 end
@@ -108,14 +115,34 @@ function run_test()
 end
 
 
-const Messages = Dict{Tuple{Int, Int}, Array}
-
 function marginalized_dists(
 	model::GraphicalModel,
 	jt::JunctionTree,
 	messages::Messages
 )
-	for m in messages
-		
+	beliefs = Vector{Array}(undef, nv(jt.tree))
+	for u in vertices(jt.tree)
+		beliefs[u] = jt.bags[u].potential
+		for neighbor in neighbors(jt.tree, u)
+			slice_dims = [indexin(idx, jt.bags[u].nodes)[]
+						  for idx in messages[(neighbor, u)].separator]
+
+			beliefs[u] = mapslices(slice -> slice .* messages[(neighbor, u)].vals,
+								   beliefs[u], dims=slice_dims)
+		end
 	end
+
+	# For each variable find a bag that contains it.
+	var_to_bag = [findfirst(u -> i in jt.bags[u].nodes, vertices(jt.tree))
+				  for i in vertices(model.g)]
+
+	# Compute the marginalized distribution for each variable.
+	ps = Vector{Float64}[]
+	for i in vertices(model.g)
+		u = var_to_bag[i]
+		slice_dims = map_to_idx_in(jt.bags[u].nodes, setdiff(jt.bags[u].nodes, [i]))
+		push!(ps, sumdrop(beliefs[u], slice_dims))
+	end
+
+	return Dict(lbl => ps[i] for (i, lbl) in enumerate(model.labels))
 end

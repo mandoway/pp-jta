@@ -41,3 +41,16 @@ struct JunctionTree
 	tree::SimpleGraph
 	bags::Vector{Bag}
 end
+
+"""
+	Message(separator, vals)
+
+A single message from one node to another with the overlapping variables `separator` and the
+values `vals`.
+"""
+struct Message
+	separator::Vector{Int64}
+	vals::Array
+end
+
+const Messages = Dict{Tuple{Int, Int}, Message}
