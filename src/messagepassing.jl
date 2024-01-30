@@ -1,3 +1,5 @@
+# using Infiltrator
+
 """
 Get traversal order for message passing protocol
 
@@ -56,7 +58,7 @@ end
 
 Sum over `arr`s dimensions `dim`, drop those dimensions and return the result.
 """
-sumdrop(arr, dims) = dropdims(sum(arr; dims=dims); dims=Tuple(dims))
+sumdrop(arr, dims) = length(dims) > 0 ? dropdims(sum(arr; dims=dims); dims=Tuple(dims)) : arr
 
 map_to_idx_in(arr::Vector{T}, vals::Vector{T}) where T = [findfirst(==(v), arr) for v in vals]
 

@@ -24,6 +24,28 @@ const MEDIUM_INSTANCES = joinpath.(Ref(INST_DIR), Ref("medium"), [
   "water.rda"
 ])
 
+const LARGE_INSTANCES = joinpath.(Ref(INST_DIR), Ref("large"), [
+  "hailfinder.rda",
+  "hepar2.rda",
+  "win95pts.rda",
+])
+
+const VERYLARGE_INSTANCES = joinpath.(Ref(INST_DIR), Ref("verylarge"), [
+  "andes.rda",
+  "diabetes.rda",
+  "link.rda",
+  "munin1.rda",
+  "pathfinder.rda",
+  "pigs.rda",
+])
+
+const MASSIVE_INSTANCES = joinpath.(Ref(INST_DIR), Ref("massive"), [
+  "munin.rda",
+  "munin2.rda",
+  "munin3.rda",
+  "munin4.rda",
+])
+
 assert_moralisation(instance_file::String, result::SimpleGraph)::Bool = pp_jta.moralise(read_graphicalmodel(instance_file).g) == result
 
 @testset "moralisation passes (CANCER, ASIA)" begin
@@ -93,13 +115,20 @@ function is_sim(as::pp_jta.DistributionByLabel, bs::pp_jta.DistributionByLabel)
              for (a,b) in zip(as[lbl], bs[lbl]))
 end
 
-@testset "Junction Tree Algorithm" begin
+@testset "Junction Tree Algorithm Small Instances" begin
   for inst_path in SMALL_INSTANCES
-    println(inst_path)
     t1 = @elapsed model = read_graphicalmodel(inst_path)
     t2 = @elapsed dists_jta = jta(model)
     t3 = @elapsed dists_brute_force = marginalize_brute_force(model)
-    println("read_model: ", t1, ", jta: ", t2, ", brute-force algo: ", t3)
+	println("read_model: ", t1, ", jta: ", t2, ", brute-force algo: ", t3)
     @test is_sim(dists_jta, dists_brute_force)
+  end
+end
+
+@testset "Junction Tree Algorithm Medium Instances" begin
+  for inst_path in MEDIUM_INSTANCES
+    t1 = @elapsed model = read_graphicalmodel(inst_path)
+    t2 = @elapsed dists_jta = jta(model)
+	println("read_model: ", t1, ", jta: ", t2)
   end
 end
