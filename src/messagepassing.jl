@@ -61,8 +61,6 @@ sumdrop(arr, dims) = dropdims(sum(arr; dims=dims); dims=Tuple(dims))
 map_to_idx_in(arr::Vector{T}, vals::Vector{T}) where T = [findfirst(==(v), arr) for v in vals]
 
 function message_passing(jt::JunctionTree)
-	println(traversal_order(jt))
-
 	messages = Messages()
 
 	for (u, v) in traversal_order(jt)
@@ -96,24 +94,6 @@ function message_passing(jt::JunctionTree)
 	end
 	return messages
 end
-
-
-function run_test()
-	bag_a = Bag{3}([1, 2, 3], rand(Float64, (2, 2, 2)))
-	bag_b = Bag{3}([2, 3, 4], rand(Float64, (2, 2, 2)))
-	bag_c = Bag{3}([3, 4, 5], rand(Float64, (2, 2, 2)))
-	bag_d = Bag{3}([4, 5, 6], rand(Float64, (2, 2, 2)))
-
-	g = SimpleGraph(4)
-	add_edge!(g, 1, 2)
-	add_edge!(g, 2, 3)
-	add_edge!(g, 3, 4)
-
-	jt = JunctionTree(g, [bag_a, bag_b, bag_c, bag_d])
-	
-	messages = message_passing(jt)
-end
-
 
 function marginalized_dists(
 	model::GraphicalModel,

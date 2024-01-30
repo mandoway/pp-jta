@@ -2,6 +2,8 @@ module pp_jta
 
 using Graphs
 
+export jta_from, jta
+
 include("datatypes.jl")
 include("parse.jl")
 include("junctiontree.jl")
