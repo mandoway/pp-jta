@@ -94,11 +94,12 @@ function is_sim(as::pp_jta.DistributionByLabel, bs::pp_jta.DistributionByLabel)
 end
 
 @testset "Junction Tree Algorithm" begin
-  for inst_path in MEDIUM_INSTANCES
+  for inst_path in SMALL_INSTANCES
+    println(inst_path)
     t1 = @elapsed model = read_graphicalmodel(inst_path)
     t2 = @elapsed dists_jta = jta(model)
     t3 = @elapsed dists_brute_force = marginalize_brute_force(model)
-    println("t1: ", t1, ", t2: ", t2, ", t3: ", t3)
+    println("read_model: ", t1, ", jta: ", t2, ", brute-force algo: ", t3)
     @test is_sim(dists_jta, dists_brute_force)
   end
 end

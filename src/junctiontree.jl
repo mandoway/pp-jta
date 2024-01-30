@@ -1,5 +1,4 @@
 using QXGraphDecompositions: flow_cutter
-# using Infiltrate # just for debugging, remove afterwards
 
 export compute_jt
 
@@ -49,7 +48,6 @@ function compute_jt(model::GraphicalModel)::JunctionTree
             # then factor indices are [3, 1, 2] and potential indices are [1, 2, 3]
             factor_prob = model.probs[f]
             permute_vector = sortperm(mapped_to_bag_indices)
-            # @infiltrate length(permute_vector) != length(factor_prob)
             factor_prob = permutedims(factor_prob, permute_vector)
 
             # Map each slice of the potential according to the current dimensionality of the probability table `factor_prob`
