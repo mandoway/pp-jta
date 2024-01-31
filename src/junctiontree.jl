@@ -2,6 +2,20 @@ using QXGraphDecompositions: flow_cutter
 
 export compute_jt
 
+"""
+    add_evidence_simple(model, evidence)
+
+Include `evidence` into the `model`.
+"""
+function add_evidence_simple(model::GraphicalModel, evidence::Dict{Int, Int})::GraphicalModel
+    newmodel = deepcopy(model)
+    for var, val in evidence
+        n_vals = size(model.probs[var], 1)
+        model.probs[var][setdiff(collect(1:n_vals), [val])] .= 0
+    end
+    return newmodel
+end
+
 function compute_jt(model::GraphicalModel)::JunctionTree
     moralised_graph = moralise(model.g)
 
@@ -46,9 +60,8 @@ function compute_jt(model::GraphicalModel)::JunctionTree
             # since the factor index is different from the potential index
             # e.g. if A -> C <- B (C depends on A & B) and node indices are A=1, B=2, C=3
             # then factor indices are [3, 1, 2] and potential indices are [1, 2, 3]
-            factor_prob = model.probs[f]
             permute_vector = sortperm(mapped_to_bag_indices)
-            factor_prob = permutedims(factor_prob, permute_vector)
+            factor_prob = permutedims(model.probs[f], permute_vector)
 
             # Map each slice of the potential according to the current dimensionality of the probability table `factor_prob`
             # Transforms the given dimensions by applying the mapping function to each slice of `potentials` of form `potentials[.., :, ..]` with `:` at each `d` in `dims`

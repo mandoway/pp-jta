@@ -126,5 +126,5 @@ function marginalized_dists(
 		push!(ps, sumdrop(beliefs[u], slice_dims))
 	end
 
-	return Dict(lbl => ps[i] for (i, lbl) in enumerate(model.labels))
+	return Dict(lbl => ps[i] ./ sum(ps[i]) for (i, lbl) in enumerate(model.labels))
 end
