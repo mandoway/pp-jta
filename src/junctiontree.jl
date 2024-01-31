@@ -9,18 +9,20 @@ Include `evidence` into the `model`.
 """
 function add_evidence_simple(model::GraphicalModel, evidence::Dict{Int, Int})::GraphicalModel
     newmodel = deepcopy(model)
-    for var, val in evidence
-        n_vals = size(model.probs[var], 1)
-        model.probs[var][setdiff(collect(1:n_vals), [val])] .= 0
+    for (var, val) in evidence
+        vals = 1:size(newmodel.probs[var], 1)
+        for v in setdiff(vals, [val])
+            eachslice(newmodel.probs[var], dims=1)[v] .= 0
+        end
     end
     return newmodel
 end
 
-function compute_jt(model::GraphicalModel)::JunctionTree
+function compute_jt(model::GraphicalModel; flow_cutter_timeout=5)::JunctionTree
     moralised_graph = moralise(model.g)
 
     # Compute junction tree with given timeout
-    junction_tree = flow_cutter(moralised_graph, TREE_DECOMPOSITION_TIMEOUT_S)
+    junction_tree = flow_cutter(moralised_graph, flow_cutter_timeout)
 
     # Map junction tree to internal graph structure
     tree = SimpleGraph(junction_tree[:num_bags])

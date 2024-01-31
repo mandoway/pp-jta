@@ -90,11 +90,13 @@ end
 # end
 
 
-function marginalize_brute_force(model::pp_jta.GraphicalModel)
+function marginalize_brute_force(model::pp_jta.GraphicalModel,
+                                 evidence::Dict{Int, Int} = Dict{Int, Int}())
   g = model.g
 
   # Probability for the values `x`.
-  p(x) = prod(model.probs[i][x[i], x[sort(inneighbors(g, i))]...]
+  p(x) = prod(any(x[var] != val for (var, val) in evidence) ? 0.0 :
+              model.probs[i][x[i], x[sort(inneighbors(g, i))]...]
               for i in vertices(g))
   range(n) = 1:n
   # Compute probabilities for all possible value combinations.
@@ -104,7 +106,7 @@ function marginalize_brute_force(model::pp_jta.GraphicalModel)
   dists = [pp_jta.sumdrop(ps, setdiff(vertices(g), [i]))
            for i in sort(vertices(g))]
 
-  return Dict(model.labels[i] => dists[i] for i in vertices(g))
+  return Dict(model.labels[i] => dists[i] ./ sum(dists[i]) for i in vertices(g))
 end
 
 function is_sim(as::pp_jta.DistributionByLabel, bs::pp_jta.DistributionByLabel)
@@ -115,20 +117,30 @@ function is_sim(as::pp_jta.DistributionByLabel, bs::pp_jta.DistributionByLabel)
              for (a,b) in zip(as[lbl], bs[lbl]))
 end
 
-@testset "Junction Tree Algorithm Small Instances" begin
+@testset "Junction Tree Algorithm: Small Instances" begin
   for inst_path in SMALL_INSTANCES
-    t1 = @elapsed model = read_graphicalmodel(inst_path)
-    t2 = @elapsed dists_jta = jta(model)
-    t3 = @elapsed dists_brute_force = marginalize_brute_force(model)
-	println("read_model: ", t1, ", jta: ", t2, ", brute-force algo: ", t3)
+    model = read_graphicalmodel(inst_path)
+    dists_jta = jta(model; flow_cutter_timeout=5)
+    dists_brute_force = marginalize_brute_force(model)
     @test is_sim(dists_jta, dists_brute_force)
   end
 end
 
-@testset "Junction Tree Algorithm Medium Instances" begin
+@testset "Junction Tree Algorithm: Medium Instances" begin
   for inst_path in MEDIUM_INSTANCES
-    t1 = @elapsed model = read_graphicalmodel(inst_path)
-    t2 = @elapsed dists_jta = jta(model)
-	println("read_model: ", t1, ", jta: ", t2)
+    model = read_graphicalmodel(inst_path)
+    dists_jta = jta(model; flow_cutter_timeout=15)
+  end
+end
+
+@testset "Junction Tree Algorithm with evidence: Small Instances" begin
+  for inst_path in SMALL_INSTANCES
+    model = read_graphicalmodel(inst_path)
+    var = rand(1:nv(model.g))
+    val = rand(1:size(model.probs[var], 1))
+    evidence = Dict(var => val)
+    dists_jta = jta(model, evidence; flow_cutter_timeout=5)
+    dists_brute_force = marginalize_brute_force(model, evidence)
+    @test is_sim(dists_jta, dists_brute_force)
   end
 end
