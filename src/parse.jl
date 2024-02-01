@@ -5,30 +5,32 @@ export read_graphicalmodel
 
 function read_graphicalmodel(path::String)::GraphicalModel
     raw_data = load(path)
-    root_element = "bn"
 
-    network = raw_data[root_element]
-    
+	network = first(values(raw_data))
+
     labels = []
     probabilities = []
-    graph = SimpleDiGraph()
+    graph = SimpleDiGraph(length(network))
 
     # Re-use indices of network in graph
-    for key in network.index2name
+	for (idx, key) in enumerate(network.index2name)
         current_node = network[key]
-
         push!(labels, key)
 
-        add_vertex!(graph)
+		parents = coerce_array(current_node["parents"])
+		
 
-        for parent in coerce_array(current_node["parents"])
+        for parent in parents
             parent_index = network.name2index[parent]
             current_index = network.name2index[key]
             add_edge!(graph, parent_index, current_index)
         end
 
-        # todo calculate correct probabilities
-        push!(probabilities, current_node["prob"])
+		sort_vector = sortperm([network.name2index[lbl] for lbl in parents])
+		# array concatenation
+		sort_vector = [[1]; sort_vector .+ 1]
+
+		push!(probabilities, permutedims(current_node["prob"], sort_vector))
     end
 
     return GraphicalModel(graph, labels, probabilities)
