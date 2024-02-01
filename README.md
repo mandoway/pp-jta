@@ -22,4 +22,26 @@ And finally install all dependencies using `instantiate`.
 
 ## Usage
 
-> TODO
+The module exposes the main function `jta_from(path, evidence, flow_cutter_timeout)` to obtain the marginalized distributions from a bayesian network.
+It takes the following parameters:
+- `path`
+    - string
+    - The path to an instance file (we currently only support .rda files)
+    - Instances used in benchmarking are provided in the `instances` folder (obtained from [bnlearn](https://www.bnlearn.com/bnrepository/))
+- `evidence`
+    - dict{int, int}
+    - A simple way to introduce evidence in the model
+    - Maps the variable (same index as in the rda file, can be inspected by calling RData.load()) to its value (index in the value array, e.g. variable X with true and false would be 1=true, 2=false)
+- `flow_cutter_timeout`
+    - int
+    - named parameter
+    - The runtime of the flow cutter algorithm, responsible for obtaining the tree decomposition
+    - Larger networks may require a higher timeout to find a better tree decomposition
+    - Better decomposition may result in smaller overall runtime
+
+
+You can also run the test with `] test`, which will run all small and medium networks.  
+If you want to run other instances, you have to change the test in `test/runtests.jj`
+
+We compared our results to the R package gRain.
+We used the script in `test/grain_bnlearn.R` to evaluate the same instances with gRain.

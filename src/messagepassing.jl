@@ -1,9 +1,5 @@
-# using Infiltrator
-
 """
 Get traversal order for message passing protocol
-
-TODO
 """
 function traversal_order(jt::JunctionTree)
 	n = nv(jt.tree)
